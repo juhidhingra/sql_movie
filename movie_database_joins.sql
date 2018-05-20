@@ -32,7 +32,7 @@ SELECT dir_fname AS Name, dir_lname AS "Last Name", mov_title AS "Movie Title"
 				ON movie_direction.mov_id = movie_cast.mov_id
 		JOIN movie 
 				ON movie_cast.mov_id = movie.mov_id
-					WHERE mov_title = 'Eyes Wide Shut';
+		WHERE mov_title = 'Eyes Wide Shut';
 
 
 
@@ -47,7 +47,7 @@ SELECT dir_fname, dir_lname, mov_title
  			 ON movie_direction.mov_id=movie.mov_id
 		JOIN movie_cast 
  			 ON movie_cast.mov_id=movie.mov_id
-  				WHERE role='Sean Maguire';
+  		WHERE role='Sean Maguire';
 
 
 
@@ -60,7 +60,7 @@ SELECT act_fname, act_lname, mov_title, mov_year
 				ON actor.act_id=movie_cast.act_id
 			JOIN movie 
 				ON movie_cast.mov_id=movie.mov_id
-					WHERE mov_year NOT BETWEEN 1990 and 2000;
+			WHERE mov_year NOT BETWEEN 1990 and 2000;
 
 
 
@@ -72,8 +72,8 @@ SELECT dir_fname,dir_lname, gen_title,COUNT(gen_title)
 			NATURAL JOIN movie_direction
 			NATURAL JOIN movie_genres
 			NATURAL JOIN genres
-				GROUP BY dir_fname, dir_lname,gen_title
-				ORDER BY dir_fname,dir_lname;
+			GROUP BY dir_fname, dir_lname,gen_title
+			ORDER BY dir_fname,dir_lname;
 
 
 
@@ -99,7 +99,7 @@ SELECT movie.mov_title, mov_year, mov_dt_rel, mov_time,dir_fname, dir_lname
 			JOIN director 
   				 ON movie_direction.dir_id=director.dir_id
 			WHERE mov_dt_rel <'01/01/1989'
-				ORDER BY mov_dt_rel desc;
+			ORDER BY mov_dt_rel desc;
 
 
 
@@ -110,7 +110,7 @@ SELECT gen_title, AVG(mov_time), COUNT(gen_title)
 		FROM movie
 			NATURAL JOIN  movie_genres
 			NATURAL JOIN  genres
-					GROUP BY gen_title;
+			GROUP BY gen_title;
 
 
 
@@ -156,9 +156,40 @@ SELECT rev_name, mov_title, rev_stars
 
 SELECT mov_title, MAX(rev_stars)
 	FROM movie
-		JOIN rating ON movie.mov_id = rating.mov_id
+		JOIN rating 
+			ON movie.mov_id = rating.mov_id
 			GROUP BY mov_title 
 			HAVING MAX(rev_stars) >= 1
 			ORDER BY mov_title;
+
+
+/*find the director's first and last name together with the title of the movie(s) they directed and received the rating*/
+
+
+SELECT mov_title, dir_fname,dir_lname, rev_stars
+	FROM director
+		JOIN movie_direction
+			ON director.dir_id=movie_direction.dir_id
+		JOIN movie
+			ON movie_direction.mov_id=movie.mov_id
+		JOIN rating
+			ON movie.mov_id=rating.mov_id
+		WHERE rev_stars is NOT NULL
+
+
+/*find the movie title, actor first and last name, and the role for those movies where one or more actors acted in two or more movies*/
+
+
+SELECT mov_title, act_fname, act_lname, role
+	FROM movie 
+		JOIN movie_cast 
+ 			 ON movie_cast.mov_id=movie.mov_id 
+		JOIN actor 
+ 			 ON movie_cast.act_id=actor.act_id
+				WHERE actor.act_id IN (
+						SELECT act_id 
+						FROM movie_cast 
+						GROUP BY act_id HAVING COUNT(*)>=2);
+
 
 
